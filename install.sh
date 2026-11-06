@@ -405,8 +405,7 @@ configure_app() {
     echo "DNS Edit"
     echo
 
-    read -r -s -p "请输入 Cloudflare API Token: " token
-    echo
+    read -r -p "请输入 Cloudflare API Token: " CF_API_TOKEN
 
     if [[ -z "$token" ]]; then
         echo "Token 不能为空"
