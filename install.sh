@@ -514,7 +514,7 @@ After=network-online.target
 [Service]
 Type=oneshot
 User=root
-ExecStart=${APP_DIR}/ddns.sh
+ExecStart=/bin/bash ${APP_DIR}/ddns.sh
 EOF
 
     cat > "/etc/systemd/system/${SERVICE}.timer" <<EOF
