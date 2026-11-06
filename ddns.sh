@@ -55,18 +55,28 @@ fi
 
 log() {
     local message="$1"
-    local size=0
+    local tmp_file
+    local log_line
 
-    if [[ -f "$LOG_FILE" ]]; then
-        size="$(stat -c '%s' "$LOG_FILE" 2>/dev/null || echo 0)"
-    fi
+    log_line="[$(date '+%F %T')] $message"
+    tmp_file="${LOG_FILE}.tmp.$$"
 
-    if (( size > 5242880 )); then
-        mv -f "$LOG_FILE" "$LOG_FILE.1"
-        chmod 600 "$LOG_FILE.1"
-    fi
+    # 使用独立日志锁，避免多个进程同时写入或截断日志
+    {
+        flock -x 8
 
-    printf '[%s] %s\n' "$(date '+%F %T')" "$message" | tee -a "$LOG_FILE"
+        # 写入日志，同时保留原来的终端输出
+        printf '%s\n' "$log_line" | tee -a "$LOG_FILE"
+
+        # 只保留最新 200 行
+        if tail -n 200 "$LOG_FILE" > "$tmp_file"; then
+            chmod 600 "$tmp_file"
+            mv -f "$tmp_file" "$LOG_FILE"
+        else
+            rm -f "$tmp_file"
+        fi
+
+    } 8>"$DATA_DIR/ddns-log.lock"
 }
 
 # -------------------- HTML 转义 --------------------
