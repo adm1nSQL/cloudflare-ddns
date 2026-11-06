@@ -405,7 +405,9 @@ configure_app() {
     echo "DNS Edit"
     echo
 
-    read -r -p "请输入 Cloudflare API Token: " CF_API_TOKEN
+    # 修复：使用局部变量 token，隐藏输入并支持粘贴
+    read -r -s -p "请输入 Cloudflare API Token: " token
+    echo
 
     if [[ -z "$token" ]]; then
         echo "Token 不能为空"
@@ -608,6 +610,9 @@ telegram_settings() {
 
     source "$APP_DIR/config.conf"
 
+    # 修复：恢复域名数组，防止 Telegram 设置保存时清空域名
+    DOMAINS=("${CF_DOMAINS[@]}")
+
     echo
     echo "========== Telegram 通知管理 =========="
 
@@ -649,8 +654,6 @@ telegram_settings() {
                 echo "Chat ID 不能为空"
                 return
             fi
-
-            CF_DOMAINS=("${CF_DOMAINS[@]}")
 
             TELEGRAM_ENABLED="true"
             TELEGRAM_BOT_TOKEN="$new_token"
